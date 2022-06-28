@@ -6,11 +6,19 @@ const express = require('express');
 //import jsonwebtoken
 const jwt= require('jsonwebtoken')
 
+//import cors
+const cors = require('cors')
+
 //import data service
 const dataService = require('./services/data.service');
 
 //server app creat using express
 const app = express()
+
+//cors use in server app
+app.use(cors({
+  origin:'http://localhost:4200'
+}))
 
 //parse JSON data
 app.use(express.json())
@@ -50,39 +58,55 @@ catch{
 
 
  // register API
-app.post('/register',(req,res)=>{
-    //REGISTER SOLVING
-    const result = dataService.register(req.body.username,req.body.acno,req.body.password)
-    res.status(result.statusCode).json(result)
+app.post('/register', (req,res) => {
+    //REGISTER SOLVING - asynchronous
+    dataService.register(req.body.username, req.body.acno, req.body.password)
+    .then(result => {
+      res.status(result.statusCode).json(result)
+    })
+    
     })
 
  // LOGIN API
 
  app.post('/login',(req,res)=>{
-    //LOGIN SOLVING
+    //LOGIN SOLVING - asynchronous
     const result = dataService.login(req.body.acno,req.body.pswd)
-    res.status(result.statusCode).json(result)
+    .then(result =>{
+      res.status(result.statusCode).json(result)
+    })
+    
     })
 
 // depositAPI
 app.post('/deposit',jwtMiddleware, (req,res)=>{
-   //LOGIN SOLVING
+   //LOGIN SOLVING - asynchronous
    const result = dataService.deposit(req.body.acno,req.body.password,req.body.amt)
-   res.status(result.statusCode).json(result)
+   .then(result =>{
+      res.status(result.statusCode).json(result)
+    })
+    
    })
 
-   app.post('/withdraw',jwtMiddleware, (req,res)=>{
-      //LOGIN SOLVING
-      const result = dataService.withdraw(req.body.acno,req.body.password,req.body.amt)
-      res.status(result.statusCode).json(result)
-      })
+   //withdraw API
+app.post('/withdraw', jwtMiddleware, (req, res) => {
+   //register solving
+   dataService.withdraw(req.body.acno, req.body.password, req.body.amt)
+   .then(result => {
+       res.status(result.statusCode).json(result)
 
-      //transaction api
-     app.post('/transaction',jwtMiddleware, (req,res)=>{
-         
-         const result = dataService.getTransaction(req.body.acno)
-         res.status(result.statusCode).json(result)
-         })
+   })
+})
+
+//transaction API
+app.post('/transaction', jwtMiddleware, (req, res) => {
+   //register solving
+   dataService.getTransaction(req.body.acno)
+   .then(result => {
+       res.status(result.statusCode).json(result)
+
+   })
+})
 
 //user request resolving
 
